@@ -3,3 +3,7 @@ node_modules/
 *.db
 *.sqlite
 *.sqlite3
+database/*.db
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
