@@ -1,6 +1,7 @@
 const express = require("express");
 const authRoutes = require("./routes/auth");
 const session = require("express-session");
+const gruposRoutes = require("./routes/grupos");
 
 const app = express();
 
@@ -13,7 +14,7 @@ app.use(session({
 }));
 
 app.use(authRoutes);
-
+app.use(gruposRoutes);
 
 app.get("/", (req, res) => {
     res.send("Servidor PracticaPPS funcionando");
