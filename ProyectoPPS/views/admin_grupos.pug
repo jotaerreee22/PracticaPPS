@@ -1,0 +1,32 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    title Admin - Gestión de Grupos
+    link(rel="stylesheet", href="/stylesheets/style.css")
+  body
+    div.container
+      nav
+        div
+          a(href="/admin/usuarios") 👥 Usuarios
+          a(href="/admin/grupos") 🏢 Grupos
+        a.btn-danger(href="/logout", style="padding: 5px 10px; color:white; border-radius:4px; text-decoration:none;") Cerrar Sesión
+
+      h3 Formulario: Alta de Grupo
+      form(action="/admin/grupo/alta", method="POST", style="margin-bottom: 40px;")
+        div.form-group
+          label Nombre del Grupo:
+          input(type="text", name="nombre", required=true, placeholder="Ej: Grupo Alfa")
+        button(type="submit") Crear Grupo
+
+      h3 Grupos Existentes
+      table
+        thead
+          tr
+            th ID Grupo
+            th Nombre del Grupo
+        tbody
+          each grupo in grupos
+            tr
+              td #{grupo.id}
+              td #{grupo.nombre}
