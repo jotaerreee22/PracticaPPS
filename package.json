@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/jotaerreee22/PracticaPPS#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "sqlite3": "^6.0.1"
   }
 }
