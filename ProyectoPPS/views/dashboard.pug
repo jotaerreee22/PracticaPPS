@@ -1,43 +1,29 @@
-html(lang="es")
-  head
-    meta(charset="UTF-8")
-    title Panel de Usuario - Chat
-    link(rel="stylesheet", href="/stylesheets/style.css")
-  body
-    div.container
-      nav
-        div.user-row
-          img.avatar(src="/uploads/" + usuario.foto, alt="Tu foto")
-          div
-            strong #{usuario.nombre} 
-            span(style="color: #7f8c8d; font-size: 14px;") (Grupo ID: #{usuario.grupo})
-        a.btn-danger(href="/logout", style="padding: 5px 10px; color:white; border-radius:4px; text-decoration:none;") Cerrar Sesión
+extends layout
 
-      div.layout-chat
-        div.sidebar
-          h3 👥 Miembros del Grupo
-          p(style="font-size: 12px; color: #7f8c8d; margin-bottom: 10px;") Solo ves usuarios de tu mismo grupo
-          each compañero in compañeros
-            div.user-row
-              img.avatar(src="/uploads/" + compañero.foto)
-              span #{compañero.nombre}
+block content
+  div.container.mt-4
+    div.d-flex.justify-content-between.align-items-center.mb-4
+      h2 Bienvenido, #{usuario.nombre} (#{usuario.rol})
+      a.btn.btn-danger(href="/logout") Cerrar Sesión
 
-        div.chat-main
-          h3 💬 Historial de Mensajes
-          div.chat-messages
-            each msg in mensajes
-              div.msg
-                strong #{msg.remitenteNombre}: 
-                span #{msg.texto}
+    hr
 
-          h3 ✉️ Enviar Mensaje
-          form(action="/mensaje/enviar", method="POST")
-            div.form-group
-              label Destinatario (Compañero):
-              select(name="destinatarioId", required=true)
-                option(value="") Selecciona a quién escribir...
-                each compañero in compañeros
-                  option(value=compañero.id) #{compañero.nombre}
-            div.form-group
-              textarea(name="texto", rows="3", placeholder="Escribe un mensaje privado...", required=true)
-            button(type="submit") Enviar Mensaje
+    div.row
+      div.col-md-4
+        h4 Compañeros / Admin
+        ul.list-group
+          each comp in companeros
+            li.list-group-item= `${comp.nombre} (${comp.rol})`
+
+      div.col-md-8
+        h4 Chat General y con Administrador
+        div.card.p-3.mb-3(style="height: 300px; overflow-y: scroll; background: #f8f9fa;")
+          each m in mensajes
+            div.mb-2
+              strong= m.remitenteNombre + ": "
+              span= m.texto
+
+        form(action="/mensaje/enviar", method="POST")
+          div.input-group
+            input.form-control(type="text", name="texto", placeholder="Escribe un mensaje...", required)
+            button.btn.btn-primary(type="submit") Enviar
