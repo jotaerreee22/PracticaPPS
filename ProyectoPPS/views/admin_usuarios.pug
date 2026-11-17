@@ -1,59 +1,53 @@
-extends layout
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    title Admin - Gestión de Usuarios
+    link(rel="stylesheet", href="/stylesheets/style.css")
+  body
+    div.container
+      nav
+        div
+          a(href="/admin/usuarios") 👥 Usuarios
+          a(href="/admin/grupos") 🏢 Grupos
+        a.btn-danger(href="/logout", style="padding: 5px 10px; color:white; border-radius:4px; text-decoration:none;") Cerrar Sesión
 
-block content
-  div.container.mt-4
-    h2 Panel de Administración - Usuarios
-    div.mb-3
-      a.btn.btn-secondary.me-2(href="/admin/grupos") Ver Grupos
-      a.btn.btn-danger(href="/logout") Cerrar Sesión
+      h3 Formulario: Alta de Usuario
+      form(action="/admin/usuario/alta", method="POST", enctype="multipart/form-data", style="margin-bottom: 40px;")
+        div.form-group
+          label Nombre Completo:
+          input(type="text", name="nombre", required=true)
+        div.form-group
+          label Email:
+          input(type="email", name="email", required=true)
+        div.form-group
+          label Contraseña:
+          input(type="password", name="pass", required=true)
+        div.form-group
+          label Asignar Grupo:
+          select(name="grupoId", required=true)
+            option(value="") Selecciona un grupo...
+            each grupo in grupos
+              option(value=grupo.id) #{grupo.nombre}
+        div.form-group
+          label Foto de Perfil:
+          input(type="file", name="foto", accept="image/*", required=true)
+        button(type="submit") Registrar Usuario
 
-    hr
-
-    h3 Lista de Usuarios
-    h3.mt-4 Alta de Usuario
- 
-    form(action="/admin/usuario/alta", method="POST", enctype="multipart/form-data")
-      div.mb-3
-        label.form-label Nombre completo
-        input.form-control(type="text", name="nombre", required)
- 
-      div.mb-3
-        label.form-label Nombre de usuario
-        input.form-control(type="text", name="email", required)
- 
-      div.mb-3
-        label.form-label Contraseña
-        input.form-control(type="password", name="pass", required, minlength="8")
- 
-      div.mb-3
-        label.form-label Asignar grupo
-        select.form-select(name="grupoId")
-          option(value="") Sin grupo
-          each grupo in grupos
-            option(value=grupo.id)= grupo.nombre
- 
-      div.mb-3
-        label.form-label Foto de perfil (opcional)
-        input.form-control(type="file", name="foto", accept="image/*")
- 
-      button.btn.btn-success(type="submit") Crear Usuario
- 
-    hr
-    table.table.table-striped.align-middle
-      thead
-        tr
-          th Nombre
-          th Usuario
-          th Rol
-          th Acciones
-      tbody
-        each u in usuarios
+      h3 Listado General de Usuarios
+      table
+        thead
           tr
-            td= u.nombre
-            td= u.email
-            td= u.rol
-            td
-              if u.rol !== 'admin'
-                a.btn.btn-danger.btn-sm(href=`/admin/usuario/eliminar/${u.id}`) Eliminar
-              else
-                span.text-muted Principal
+            th Foto
+            th Nombre
+            th Email
+            th Grupo ID
+        tbody
+          each user in usuarios
+            if user.rol !== 'admin'
+              tr
+                td
+                  img.avatar(src="/uploads/" + user.foto)
+                td #{user.nombre}
+                td #{user.email}
+                td #{user.grupo}
