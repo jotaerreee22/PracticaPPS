@@ -7,6 +7,8 @@ var session = require('express-session');
 var multer = require('multer');
 
 var app = express();
+const bcrypt = require('bcrypt');
+const db = require('../database/conexion');
 
 // Motor de vistas Pug
 app.set('views', path.join(__dirname, 'views'));
@@ -35,15 +37,15 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Base de datos simulada en memoria
+// Base de datos simulada en memoria (Usuarios sin @)
 let bd = {
     usuarios: [
-        { id: 1, email: 'admin@app.com', pass: 'admin123', nombre: 'Admin', rol: 'admin', grupo: null, foto: 'default.png' },
-        { id: 2, email: 'user1@app.com', pass: '123', nombre: 'Carlos Hurtado', rol: 'user', grupo: 1, foto: 'default.png' },
-        { id: 3, email: 'user2@app.com', pass: '123', nombre: 'Ana Gómez', rol: 'user', grupo: 1, foto: 'default.png' }
+        { id: 1, email: 'admin', pass: 'admin123', nombre: 'Admin', rol: 'admin', grupo: null, foto: 'default.png' },
+        { id: 2, email: 'carlos', pass: '123', nombre: 'Carlos Hurtado', rol: 'user', grupo: 1, foto: 'default.png' },
+        { id: 3, email: 'ana', pass: '123', nombre: 'Ana Gómez', rol: 'user', grupo: 1, foto: 'default.png' }
     ],
     grupos: [{ id: 1, nombre: 'Grupo Desarrollo' }],
-    mensajes: [{ id: 1, remitenteNombre: 'Ana Gómez', texto: '¡Hola! ¿Cómo vais con la interfaz?', grupoId: 1 }]
+    mensajes: [{ id: 1, remitenteNombre: 'Ana Gómez', texto: '¡Hola! Bienvenidos al sistema.', grupoId: 1 }]
 };
 
 // --- RUTAS INTEGRADAS ---
@@ -62,7 +64,9 @@ app.get('/', function(req, res) {
 
 /* PROCESAR LOGIN */
 app.post('/login', function(req, res) {
-    const { email, pass } = req.body;
+    const email = req.body.email ? req.body.email.trim() : '';
+    const pass = req.body.pass ? req.body.pass.trim() : '';
+
     const usuario = bd.usuarios.find(u => u.email === email && u.pass === pass);
     if (!usuario) return res.redirect('/');
     
@@ -80,15 +84,32 @@ app.get('/admin/usuarios', function(req, res) {
     res.render('admin_usuarios', { usuarios: bd.usuarios, grupos: bd.grupos });
 });
 
+/* DAR DE ALTA USUARIO */
 app.post('/admin/usuario/alta', upload.single('foto'), function(req, res) {
     const { nombre, email, pass, grupoId } = req.body;
     const foto = req.file ? req.file.filename : 'default.png';
     bd.usuarios.push({
         id: bd.usuarios.length + 1,
-        nombre, email, pass, rol: 'user',
-        grupo: parseInt(grupoId),
+        nombre, 
+        email: email ? email.trim() : '', 
+        pass, 
+        rol: 'user', 
+        grupo: parseInt(grupoId) || 1,
         foto
     });
+    res.redirect('/admin/usuarios');
+});
+
+/* ELIMINAR USUARIO */
+app.get('/admin/usuario/eliminar/:id', function(req, res) {
+    if (!req.session.usuario || req.session.usuario.rol !== 'admin') return res.redirect('/');
+    const userId = parseInt(req.params.id);
+    
+    if (userId === req.session.usuario.id) {
+        return res.redirect('/admin/usuarios');
+    }
+
+    bd.usuarios = bd.usuarios.filter(u => u.id !== userId);
     res.redirect('/admin/usuarios');
 });
 
@@ -108,8 +129,8 @@ app.get('/dashboard', function(req, res) {
     const usuarioLogueado = req.session.usuario;
     if (!usuarioLogueado) return res.redirect('/');
 
-    const compañeros = bd.usuarios.filter(u => u.grupo === usuarioLogueado.grupo && u.id !== usuarioLogueado.id);
-    const misMensajes = bd.mensajes.filter(m => m.grupoId === usuarioLogueado.grupo);
+    const compañeros = bd.usuarios.filter(u => u.id !== usuarioLogueado.id);
+    const misMensajes = bd.mensajes; 
     
     res.render('dashboard', { usuario: usuarioLogueado, compañeros, mensajes: misMensajes });
 });
@@ -122,9 +143,9 @@ app.post('/mensaje/enviar', function(req, res) {
 
     bd.mensajes.push({
         id: bd.mensajes.length + 1,
-        remitenteNombre: remitente.nombre,
+        remitenteNombre: `${remitente.nombre} (${remitente.rol === 'admin' ? 'Admin' : 'Usuario'})`,
         texto,
-        grupoId: remitente.grupo
+        grupoId: remitente.grupo || 1
     });
     res.redirect('/dashboard');
 });
@@ -140,7 +161,7 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// Manejador de errores interno (Evita buscar vistas externas de error)
+// Manejador de errores interno
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.send(`<h1>Error ${err.status || 500}: ${err.message}</h1><a href="/">Volver al inicio</a>`);
