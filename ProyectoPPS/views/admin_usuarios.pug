@@ -10,6 +10,35 @@ block content
     hr
 
     h3 Lista de Usuarios
+    h3.mt-4 Alta de Usuario
+ 
+    form(action="/admin/usuario/alta", method="POST", enctype="multipart/form-data")
+      div.mb-3
+        label.form-label Nombre completo
+        input.form-control(type="text", name="nombre", required)
+ 
+      div.mb-3
+        label.form-label Nombre de usuario
+        input.form-control(type="text", name="email", required)
+ 
+      div.mb-3
+        label.form-label Contraseña
+        input.form-control(type="password", name="pass", required, minlength="8")
+ 
+      div.mb-3
+        label.form-label Asignar grupo
+        select.form-select(name="grupoId")
+          option(value="") Sin grupo
+          each grupo in grupos
+            option(value=grupo.id)= grupo.nombre
+ 
+      div.mb-3
+        label.form-label Foto de perfil (opcional)
+        input.form-control(type="file", name="foto", accept="image/*")
+ 
+      button.btn.btn-success(type="submit") Crear Usuario
+ 
+    hr
     table.table.table-striped.align-middle
       thead
         tr
